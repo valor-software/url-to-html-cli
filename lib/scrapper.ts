@@ -97,7 +97,7 @@ export default class Scrapper {
           'index' : pageName;
 
 
-        filename = addExtension(filename);
+        filename = addExtension(this.host, filename);
 
         this.fManager.save(`${fullPath}/`, filename, d.window.document.documentElement.outerHTML);
         // res([`${url}/about`, url]);

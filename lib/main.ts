@@ -68,6 +68,7 @@ function main() {
         break;
       case 3:
         await fCommands.deployToGHPages();
+        break;
       case 4:
       default:
         process.exit(0);

@@ -222,7 +222,7 @@ export default class FileManagerCommands {
   }
 
   async deployToGHPages() {
-    const answers = inquirer.prompt([{
+    const answers = await inquirer.prompt([{
       name: 'folder',
       type: 'input',
       message: 'Folder ',
@@ -235,7 +235,7 @@ export default class FileManagerCommands {
     }, {
       name: 'repo',
       type: 'input',
-      message: 'Specify a reposiory to deploy ',
+      message: 'Specify a repository to deploy ',
       default: 'git@github.com:VS-work/VS-work.github.io.git',
       validate: (url: string) => {
         if (!url || url === '') {
@@ -250,15 +250,17 @@ export default class FileManagerCommands {
       default: 'gh-pages'
     }]);
 
-    return new Promise(async (resolve, reject) => {
-      ghPages.publish(answers.options.folder, {
-        branch: answers.options.branch,
-        repo: answers.options.repo
-      }, (err) => {
-        console.log(err);
-        return err ? reject() : resolve();
-      });
+    const spinner = new Spinner('Deploying...');
+    spinner.start();
+
+    await ghPages.publish(answers.folder, {
+      branch: answers.branch,
+      repo: answers.repo
     });
+
+    spinner.stop(true);
+
+    return Promise.resolve();
   }
 }
 
