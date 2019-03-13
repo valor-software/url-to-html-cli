@@ -38,8 +38,9 @@ function main() {
       choices: [
         {name: 'Manage commands', value: 0},
         {name: 'Scrap a new site', value: 1},
-        {name:'Serve', value: 2},
-        {name:'Exit', value: 3}
+        {name: 'Serve', value: 2},
+        {name: 'Deploy to gh-pages', value: 3},
+        {name: 'Exit', value: 4}
       ],
       default: 2,
     }]);
@@ -65,7 +66,10 @@ function main() {
       case 2:
         await fCommands.serveSite();
         break;
-    //   case 3:
+      case 3:
+        await fCommands.deployToGHPages();
+        break;
+      case 4:
       default:
         process.exit(0);
     }

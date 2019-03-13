@@ -1,5 +1,5 @@
 import * as urlParser from 'url';
-import { addExtension, normalizeLink, removeEndSlash, removeStartSlash } from './utils';
+import { addExtension, removeEndSlash, removeStartSlash } from './utils';
 import FileManager from './file-manager';
 import Loader from './loader';
 import {settings} from './settings';
@@ -12,7 +12,7 @@ export default class TagsProcessor {
     this.sanitizedHost = removeEndSlash(hostUrl)
   }
 
-  normalizeUrl(url) {
+  normalizeUrl(url: string): string {
     if (url.startsWith('http')) {
       return url;
     }
@@ -41,16 +41,18 @@ export default class TagsProcessor {
     const linksList = [];
     if (item.attributes.href) {
       const href = removeEndSlash(item.attributes.href.value);
+      
       if (href.startsWith(url)) {
         linksList.push(href);
         item.attributes.href.value = addExtension(
+          host,
           href.replace(url, host)
         );
 
       }
       if (!href.startsWith('http') && !href.startsWith('#')) {
         linksList.push(`${url}${href}`);
-        item.attributes.href.value = addExtension(href);
+        item.attributes.href.value = addExtension(host, href);
       }
     }
     return linksList;

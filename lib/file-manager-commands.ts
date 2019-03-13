@@ -1,19 +1,12 @@
-// import { execSync } from 'child_process';
 const promisify = require('util').promisify;
-import { ChildProcess, execSync, spawn } from 'child_process';
+const ghPages = require('gh-pages');
+
+import { spawn } from 'child_process';
 
 const ms = promisify(spawn);
 const Spinner = require('cli-spinner').Spinner;
-
-// const spawn = promisify(require('fs').spawn);
-// const mkdir = promisify(require('fs').mkdir);
-// const dirExists = promisify(require('fs').access);
-// const readdir = promisify(require('fs').readdir);
-
-
-// var childProcess = require('child_process');
-
 const inquirer = require('inquirer');
+
 import chalk from 'chalk';
 
 import FileManager from './file-manager'
@@ -169,8 +162,6 @@ export default class FileManagerCommands {
       }
     }]);
 
-    // console.log('an', answers);
-
     return new Promise(async (res, rej) => {
       console.log(chalk.green(chalk.bold('Preparing files structure\n')));
       await this.fileManager.createSiteStructure(answers.folder);
@@ -228,6 +219,48 @@ export default class FileManagerCommands {
       await this.loader.loadResources();
       res();
     });
+  }
+
+  async deployToGHPages() {
+    const answers = await inquirer.prompt([{
+      name: 'folder',
+      type: 'input',
+      message: 'Folder ',
+      validate: (value: string) => {
+        if (!value || value === '') {
+          return ('You need to provide a word');
+        }
+        return true;
+      }
+    }, {
+      name: 'repo',
+      type: 'input',
+      message: 'Specify a repository to deploy ',
+      default: 'git@github.com:VS-work/VS-work.github.io.git',
+      validate: (url: string) => {
+        if (!url || url === '') {
+          return ('You need to provide a URL address');
+        }
+        return true;
+      }
+    }, {
+      name: 'branch',
+      type: 'input',
+      message: 'Specify a branch ',
+      default: 'gh-pages'
+    }]);
+
+    const spinner = new Spinner('Deploying...');
+    spinner.start();
+
+    await ghPages.publish(answers.folder, {
+      branch: answers.branch,
+      repo: answers.repo
+    });
+
+    spinner.stop(true);
+
+    return Promise.resolve();
   }
 }
 
