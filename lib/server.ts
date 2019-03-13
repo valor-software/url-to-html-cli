@@ -3,9 +3,7 @@ const express = require('express');
 const app = express();
 
 // console.log('process.argv', process.argv);
-const folder = '/home/work/projects/valor-scrapper/save/' + process.argv[2];
-console.log('folder', folder);
-
+const folder = './save/' + process.argv[2];
 app.use(
   express.static(folder));
 

@@ -80,10 +80,7 @@ export default class FileManagerCommands {
       }
 
   // try {
-    const aa = spawn(
-      'node',
-      ['/home/work/projects/valor-scrapper/dist/lib/server.js', options.folders]
-    );
+    const aa = spawn('node', ['./dist/lib/server.js', options.folders]);
       //
       // aa.on('SIGTERM', () => {
       //   console.log('\n\n\n\nEXIT!!!', );
@@ -137,7 +134,7 @@ export default class FileManagerCommands {
       type: 'input',
       message: 'Specify a original URL? ',
       // default: 'https://dplguru-parse.webflow.io',
-      default: 'http://localhost:5000',
+      default: 'https://valor.webflow.io',
       validate: function (url) {
         if (!url || url === '') {
           // || !url.match(new RegExp(/[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi))) {

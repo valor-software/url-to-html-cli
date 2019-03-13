@@ -94,7 +94,7 @@ export default class TagsProcessor {
   }
 
   processImage(item, folder) {
-    if (!item.attributes || !(item.attributes as any).src) {
+    if (!item.attributes || !(item.attributes as any).src || (item.attributes as any).src.value === '') {
       return;
     }
     const srcVal = (item.attributes as any).src.value;
