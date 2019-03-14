@@ -20,7 +20,8 @@ export default class FileManagerCommands {
 
   async manageSites() {
     // return new Promise(async (res, rej) => {
-      const list = await this.fileManager.getList();
+      let list = await this.fileManager.getList();
+      list = list.filter(name => name !== '.keep');
 
       const options = await inquirer.prompt([{
         name: 'folders',
@@ -58,7 +59,8 @@ export default class FileManagerCommands {
 
   serveSite() {
     return new Promise(async (res, rej) => {
-      const list = await this.fileManager.getList();
+      let list = await this.fileManager.getList();
+      list = list.filter(name => name !== '.keep');
 
       const options = await inquirer.prompt([{
         name: 'folders',

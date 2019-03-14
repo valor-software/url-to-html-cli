@@ -75,6 +75,7 @@ export default class TagsProcessor {
     }
     const split = url.split('/');
     let filename = split[split.length - 1];
+    filename = filename.replace('%', '_');
     const subfolder = this.getLinkFolder(fileType);
     const savePath = `${folder}/${subfolder}/${filename}`;
     this.loader.addToLoadingQueue(`./save/${savePath}`, this.normalizeUrl(url));
@@ -119,7 +120,7 @@ export default class TagsProcessor {
   processStyleAttr(item, folder) {
     if (item.attributes && item.attributes.style) {
       const style = item.attributes.style.value;
-      const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+      const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;()]*[-A-Z0-9+&@#\/%=~_|])/ig;
       item.attributes.style.value = style.replace(urlRegex, (url) => {
         // console.log('\n', url);
         // return '<a href="' + url + '">' + url + '</a>';
