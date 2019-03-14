@@ -81,7 +81,6 @@ export default class Loader {
       spinner.setSpinnerString(27);
       spinner.start();
 
-
       request({
         url: resource.url,
         method: 'head'
@@ -105,11 +104,7 @@ export default class Loader {
           // }
         }
 
-        piped.on('finish', () => { console.log('FINISH')});
-        piped.on('end', () => { console.log('END')});
-
         piped.on('close', () => {
-          console.log('IN CLOSE');
             spinner.stop(true);
             console.log(resource.url + chalk.green(' done'));
             resolve();
