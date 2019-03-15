@@ -39,3 +39,5 @@ newrelic_agent.log
 # System Files
 .DS_Store
 Thumbs.db
+
+/save/**
