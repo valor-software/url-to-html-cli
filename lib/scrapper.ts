@@ -29,7 +29,7 @@ export default class Scrapper {
 
 
 
-  goDeepN(inp, folder) {
+  getLinksList(inp, folder) {
     let linksList = [];
     Object.values(inp).forEach((item: any) => {
       switch(item.nodeName.toLowerCase()) {
@@ -58,14 +58,14 @@ export default class Scrapper {
       if (!item.children || item.children.length === 0) {
         return;
       }
-      const r = this.goDeepN(item.children, folder);
-      linksList = linksList.concat(r);
+      const links = this.getLinksList(item.children, folder);
+      linksList = linksList.concat(links);
     });
     return linksList;
 
   }
 
-  getPageHTML(url, folder): Promise<string[]> {
+  getPageHTML(url: string, folder: string, originalUrl: string): Promise<string[]> {
 
     return new Promise(async (res, rej) => {
       await request(url, async (err, resp, body) => {
@@ -74,7 +74,7 @@ export default class Scrapper {
         }
 
         const d = new JSDOM(body);
-        const aaaa = this.goDeepN(d.window.document.children, folder);
+        const links = this.getLinksList(d.window.document.children, folder);
 
         const split = urlParser.parse(url).pathname.split('/');
         const pageName = split.pop();
@@ -99,9 +99,12 @@ export default class Scrapper {
 
         filename = addExtension(this.host, filename);
 
-        this.fManager.save(`${fullPath}/`, filename, d.window.document.documentElement.outerHTML);
-        // res([`${url}/about`, url]);
-        res(aaaa);
+        const urlDomain = originalUrl.replace(/(^\w+:|^)\/\//, '');
+        const fileBody = d.window.document.documentElement.outerHTML.replace(urlDomain, this.host);
+
+        this.fManager.save(`${fullPath}/`, filename, fileBody);
+
+        res(links);
       });
       
     });

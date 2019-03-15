@@ -135,7 +135,6 @@ export default class FileManagerCommands {
       name: 'url',
       type: 'input',
       message: 'Specify a original URL? ',
-      // default: 'https://dplguru-parse.webflow.io',
       default: 'https://valor.webflow.io',
       validate: function (url) {
         if (!url || url === '') {
@@ -150,7 +149,6 @@ export default class FileManagerCommands {
       type: 'input',
       message: 'Specify a URL for host inst? ',
       default: 'http://localhost:3000',
-      // default: 'https://valor-grab.webflow.io',
       validate: function (url) {
         if (!url || url === '') {
           // || !url.match(new RegExp(/[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi))) {
@@ -184,7 +182,7 @@ export default class FileManagerCommands {
         const spinner = new Spinner({text: `Parsing: ${currentUrl} %s`});
         spinner.setSpinnerString(27);
         spinner.start();
-        let newpages = await scrapper.getPageHTML(currentUrl, answers.folder);
+        let newpages = await scrapper.getPageHTML(currentUrl, answers.folder, answers.url);
 
         newpages = newpages.reduce((list, item) => {
           if (list.indexOf(item) === -1) {
