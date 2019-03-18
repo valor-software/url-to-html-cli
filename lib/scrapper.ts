@@ -8,19 +8,7 @@ import TagsProcessor from './tags-processor';
 import { addExtension } from './utils';
 
 export default class Scrapper {
-
-  paths = {
-    html: '',
-    css: 'css/',
-    js: 'js/',
-    script: 'js/',
-    jpeg: 'assets/images/',
-    img: 'assets/images/'
-  };
-
   tagsProcessor: TagsProcessor;
-
-  // saver = new Saver();
 
   constructor(private url: string, private host: string,
               private fManager: FileManager, private loader: Loader) {
@@ -30,6 +18,7 @@ export default class Scrapper {
 
 
   getLinksList(inp, folder) {
+    // array for saving found internal links
     let linksList = [];
     Object.values(inp).forEach((item: any) => {
       switch(item.nodeName.toLowerCase()) {
@@ -62,7 +51,6 @@ export default class Scrapper {
       linksList = linksList.concat(links);
     });
     return linksList;
-
   }
 
   getPageHTML(url: string, folder: string, originalUrl: string): Promise<string[]> {
@@ -73,15 +61,15 @@ export default class Scrapper {
           return rej(err);
         }
 
-        const d = new JSDOM(body);
-        const links = this.getLinksList(d.window.document.children, folder);
+        const dom = new JSDOM(body);
+        const links = this.getLinksList(dom.window.document.children, folder);
 
         const split = urlParser.parse(url).pathname.split('/');
         const pageName = split.pop();
 
         let fullPath = folder;
-
-        for(let i = 0; i < split.length; i++) {
+        // building nested html paths, e.g. /articles/category/content
+        for (let i = 0; i < split.length; i++) {
           const currentSegment = split[i];
           if (!currentSegment || currentSegment === '') {
             continue;
@@ -90,17 +78,14 @@ export default class Scrapper {
           fullPath += `/${currentSegment}`;
 
           await this.fManager.createFolder(fullPath);
-
         }
 
-        let filename = pageName === '/' || pageName === '' ?
-          'index' : pageName;
-
+        let filename = pageName === '/' || pageName === '' ? 'index' : pageName;
 
         filename = addExtension(this.host, filename);
 
         const urlDomain = originalUrl.replace(/(^\w+:|^)\/\//, '');
-        const fileBody = d.window.document.documentElement.outerHTML.replace(urlDomain, this.host);
+        const fileBody = dom.window.document.documentElement.outerHTML.replace(urlDomain, this.host);
 
         this.fManager.save(`${fullPath}/`, filename, fileBody);
 

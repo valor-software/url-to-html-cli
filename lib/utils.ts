@@ -3,7 +3,7 @@
 // }
 
 export function removeEndSlash(link: string): string {
-  return link.replace(/#\/$/, '');
+  return link.replace(/#\/$/, '').replace(/\/$/, '');
 }
 
 export function removeStartSlash(link: string): string {

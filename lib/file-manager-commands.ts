@@ -1,25 +1,21 @@
-const promisify = require('util').promisify;
-const ghPages = require('gh-pages');
-
 import { spawn } from 'child_process';
 
-const ms = promisify(spawn);
+const ghPages = require('gh-pages');
 const Spinner = require('cli-spinner').Spinner;
 const inquirer = require('inquirer');
-
 import chalk from 'chalk';
 
 import FileManager from './file-manager'
 import Scrapper from './scrapper';
 import Loader from './loader';
+import { removeEndSlash } from './utils';
 
 
 export default class FileManagerCommands {
   private fileManager = new FileManager();
-  private loader = new Loader(this.fileManager);
+  private loader: Loader;
 
   async manageSites() {
-    // return new Promise(async (res, rej) => {
       let list = await this.fileManager.getList();
       list = list.filter(name => name !== '.keep');
 
@@ -81,40 +77,15 @@ export default class FileManagerCommands {
         return res();
       }
 
-  // try {
     const aa = spawn('node', ['./dist/lib/server.js', options.folders]);
-      //
-      // aa.on('SIGTERM', () => {
-      //   console.log('\n\n\n\nEXIT!!!', );
-      // })
-      //
-      // aa.on('SIGINT', () => {
-      //   console.log('\n\n\n\nEXIT!!!', );
-      // })
-      //
-      // aa.on('exit', () => {
-      //   console.log('\n\n\n\nEXIT MAIN!!!', );
-      // })
-      //
-      // aa.on('message', (meg) => {
-      //   console.log('\n\n\n\nMSG!!!', );
-      // })
 
     aa.stdout.on('data', (data) => {
       console.log(data.toString());
 
-    })
-  //
+    });
     aa.stderr.on('data', (data) => {
       console.log(data.toString());
     });
-  // } catch(e) {
-  //   console.log('IN CATCH');
-  //
-  // } finally {
-  //   console.log('IN FINALLY', );
-  //
-  // }
 
     });
   }
@@ -158,11 +129,14 @@ export default class FileManagerCommands {
         }
       }
     }]);
+    answers.url = removeEndSlash(answers.url);
+    answers.host = removeEndSlash(answers.host);
 
     return new Promise(async (res, rej) => {
       console.log(chalk.green(chalk.bold('Preparing files structure\n')));
       await this.fileManager.createSiteStructure(answers.folder);
       console.log(chalk.green(chalk.bold('Start parsing\n')));
+      this.loader = new Loader(this.fileManager, answers.folder, answers.url, answers.host)
       const scrapper = new Scrapper(answers.url, answers.host, this.fileManager, this.loader);
 
       let pages = [{
@@ -195,13 +169,9 @@ export default class FileManagerCommands {
         pages = pages.concat(
           newpages
             .filter(page => {
-              // const ff = pages.find(p => p.page === page);
-              // console.log('ff', page, ff);
-              
               return (pages.findIndex(p => p.page === page)) === -1;
             })
             .map(page => {
-
               return {
                 page,
                 isProcessed: false
@@ -214,21 +184,35 @@ export default class FileManagerCommands {
       console.log(chalk.green(chalk.bold('Parsing complete. Uploading resources\n')));
 
       await this.loader.loadResources();
+
+      console.log(chalk.green(chalk.bold('Uploading complete. Analyzing CSS files\n')));
+
+      const cssFilesList = await this.fileManager.getFolderContent(`${answers.folder}/assets/css`);
+
+      await this.loader.processCssFiles(cssFilesList, answers);
+      await this.loader.loadResources();
+
+      console.log(chalk.green(chalk.bold('Scrapping complete\n')));
+
       res();
     });
   }
 
   async deployToGHPages() {
+    let list = await this.fileManager.getList();
+    list = list.filter(name => name !== '.keep');
+
     const answers = await inquirer.prompt([{
       name: 'folder',
-      type: 'input',
-      message: 'Folder ',
-      validate: (value: string) => {
-        if (!value || value === '') {
-          return ('You need to provide a word');
-        }
-        return true;
-      }
+      type: 'list',
+      message: 'Select items to remove',
+      choices: list
+        .map(key => {
+          return {
+            value: `./save/${key}`,
+            name: key
+          }
+        })
     }, {
       name: 'repo',
       type: 'input',
