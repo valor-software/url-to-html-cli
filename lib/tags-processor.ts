@@ -1,8 +1,6 @@
-import * as urlParser from 'url';
-import { addExtension, removeEndSlash, removeStartSlash } from './utils';
+import { addExtension, removeEndSlash } from './utils';
 import FileManager from './file-manager';
 import Loader from './loader';
-import {settings} from './settings';
 
 export default class TagsProcessor {
   sanitizedHost: string;
@@ -12,30 +10,6 @@ export default class TagsProcessor {
     this.sanitizedHost = removeEndSlash(hostUrl)
   }
 
-  normalizeUrl(url: string): string {
-    if (url.startsWith('http')) {
-      return url;
-    }
-
-    return `${removeEndSlash(this.originalUrl)}/${removeStartSlash(url)}`;
-  }
-
-  getLinkFolder(linkType) {
-    const types = [
-      {
-        type: 'text/css',
-        folder: 'assets/css'
-      }, {
-        type: 'javascript',
-        folder: 'assets/js'
-      }, {
-        type: 'image',
-        folder: 'assets/images'
-      }
-    ];
-    const folder = types.find(item => item.type === linkType);
-    return folder ? folder.folder : 'assets/images';
-  }
 
   processATag(item: any, url: string, host: string): string[] {
     const linksList = [];
@@ -62,36 +36,19 @@ export default class TagsProcessor {
     if (!item.attributes || !(item.attributes as any).src) {
       return;
     }
-    item.attributes.src.value = this.addToQueue(item.attributes.src.value, 'javascript', folder);
+    item.attributes.src.value = this.loader.addToQueue(item.attributes.src.value, 'javascript', folder);
 
-    // return;
-  }
-
-  addToQueue(url: string, fileType: string, folder: string): string {
-    const host = urlParser.parse(url);
-    if (url.startsWith('//') ||
-      settings.excludedDomains.indexOf(host.hostname) !== -1) {
-      return url;
-    }
-    const split = url.split('/');
-    let filename = split[split.length - 1];
-    filename = filename.replace('%', '_');
-    const subfolder = this.getLinkFolder(fileType);
-    const savePath = `${folder}/${subfolder}/${filename}`;
-    this.loader.addToLoadingQueue(`./save/${savePath}`, this.normalizeUrl(url));
-    return `${this.sanitizedHost}/${subfolder}/${filename}`;
   }
 
 
   processLink(item: any, folder) {
-
     if (!item.attributes.href) {
       return;
     }
 
     // for links such favicon and similar
     const linkType = item.attributes.type ? item.attributes.type.value : 'image';
-    item.attributes.href.value = this.addToQueue(item.attributes.href.value, linkType, folder);
+    item.attributes.href.value = this.loader.addToQueue(item.attributes.href.value, linkType, folder);
   }
 
   processImage(item, folder) {
@@ -109,12 +66,12 @@ export default class TagsProcessor {
         srcsetVals.forEach(val => {
           (item.attributes as any).srcset.value =
             (item.attributes as any).srcset.value
-              .replace(val, this.addToQueue(val, 'image', folder));
+              .replace(val, this.loader.addToQueue(val, 'image', folder));
 
         });
       }
     }
-    (item.attributes as any).src.value = this.addToQueue(srcVal, 'image', folder);
+    (item.attributes as any).src.value = this.loader.addToQueue(srcVal, 'image', folder);
   }
 
   processStyleAttr(item, folder) {
@@ -122,12 +79,8 @@ export default class TagsProcessor {
       const style = item.attributes.style.value;
       const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;()]*[-A-Z0-9+&@#\/%=~_|])/ig;
       item.attributes.style.value = style.replace(urlRegex, (url) => {
-        // console.log('\n', url);
-        // return '<a href="' + url + '">' + url + '</a>';
-        return this.addToQueue(url, 'image', folder);
+        return this.loader.addToQueue(url, 'image', folder);
       });
-
     }
-
   }
 }

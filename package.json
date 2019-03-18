@@ -6,7 +6,8 @@
   "bin": "bin/scrapper-cli",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc"
+    "build": "tsc",
+    "start": "npm run build && node dist/main.js"
   },
   "author": "",
   "license": "ISC",

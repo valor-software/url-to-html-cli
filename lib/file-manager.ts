@@ -7,6 +7,7 @@ const writeFile = promisify(require('fs').writeFile);
 const mkdir = promisify(require('fs').mkdir);
 const dirExists = promisify(require('fs').access);
 const readdir = promisify(require('fs').readdir);
+const readFile = promisify(require('fs').readFile);
 
 export default class FileManager {
   createSiteStructure(folderName: string) {
@@ -28,8 +29,16 @@ export default class FileManager {
     })
   }
 
+  async read(path: string) {
+    return readFile(path);
+  }
+
   async save(folder: string, fname: string, content: any) {
     return writeFile(`./save/${folder}${fname}`, content);
+  }
+
+  async directSave(path: string, content: any) {
+    return writeFile(path, content);
   }
 
   async createFolder(folder: string) {
@@ -57,6 +66,11 @@ export default class FileManager {
 
   getWriteStream(filename) {
     return fs.createWriteStream(filename);
+  }
+
+
+  getFolderContent(folderName) {
+    return readdir(`./save/${folderName}`);
   }
 
   async getList() {
