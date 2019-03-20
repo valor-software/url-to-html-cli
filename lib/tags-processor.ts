@@ -1,15 +1,8 @@
 import { addExtension, removeEndSlash } from './utils';
-import FileManager from './file-manager';
 import Loader from './loader';
 
 export default class TagsProcessor {
-  sanitizedHost: string;
-
-  constructor(private originalUrl: string, hostUrl: string,
-              private fileManager: FileManager, private loader: Loader) {
-    this.sanitizedHost = removeEndSlash(hostUrl)
-  }
-
+  constructor(private loader: Loader) {}
 
   processATag(item: any, url: string, host: string): string[] {
     const linksList = [];
