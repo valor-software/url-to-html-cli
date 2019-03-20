@@ -1,21 +1,83 @@
-import Loader from './loader';
-
-const request = require("request");
 import * as urlParser from 'url';
-const JSDOM = require("jsdom").JSDOM;
+
+const request = require('request');
+const Spinner = require('cli-spinner').Spinner;
+import chalk from 'chalk';
+const JSDOM = require('jsdom').JSDOM;
+
 import FileManager from './file-manager';
 import TagsProcessor from './tags-processor';
+import Loader from './loader';
 import { addExtension } from './utils';
 
 export default class Scrapper {
   tagsProcessor: TagsProcessor;
+  url: string;
+  host: string;
+  constructor(private fManager: FileManager, private loader: Loader) {}
 
-  constructor(private url: string, private host: string,
-              private fManager: FileManager, private loader: Loader) {
-    this.tagsProcessor = new TagsProcessor(url, host, this.fManager, this.loader);
+  scrap(answers) {
+    this.url = answers.url;
+    this.host = answers.host;
+    this.tagsProcessor = new TagsProcessor(this.loader);
+
+    let pages = [{
+      page: this.url,
+      isProcessed: false
+    }];
+
+    return new Promise(async (res, rej) => {
+      while(true) {
+        const current = pages.find(p => !p.isProcessed);
+
+        if (!current) {
+          break;
+        }
+
+        const currentUrl = current.page;
+        const spinner = new Spinner({text: `Parsing: ${currentUrl} %s`});
+        spinner.setSpinnerString(27);
+        spinner.start();
+        let newpages = await this.getPageHTML(currentUrl, answers.folder, answers.url);
+
+        newpages = newpages.reduce((list, item) => {
+          if (list.indexOf(item) === -1) {
+            list.push(item);
+          }
+          return list;
+        }, []);
+
+        pages.find(page => page.page === currentUrl).isProcessed = true;
+        pages = pages.concat(
+          newpages
+            .filter(page => {
+              return (pages.findIndex(p => p.page === page)) === -1;
+            })
+            .map(page => {
+              return {
+                page,
+                isProcessed: false
+              }
+            }));
+
+        spinner.stop(true);
+        console.log(currentUrl + chalk.green(' done'));
+      }
+      console.log(chalk.green(chalk.bold('Parsing complete. Uploading resources\n')));
+
+      await this.loader.loadResources();
+
+      console.log(chalk.green(chalk.bold('Uploading complete. Analyzing CSS files\n')));
+
+      await this.loader.processCssFiles();
+      await this.loader.loadResources();
+
+      console.log(chalk.green(chalk.bold('Scrapping complete\n')));
+
+      res();
+    });
+
   }
-
-
 
   getLinksList(inp, folder) {
     // array for saving found internal links

@@ -3,11 +3,11 @@ const zlib = require('zlib');
 const request = require('request');
 
 import chalk from 'chalk';
-
 const Spinner = require('cli-spinner').Spinner;
+
 import FileManager from './file-manager';
 import { settings } from './settings';
-import { removeEndSlash, removeStartSlash } from './utils';
+import { getLinkFolder, normalizeUrl, removeEndSlash } from './utils';
 
 interface Resource {
   url: string,
@@ -22,7 +22,7 @@ export default class Loader {
   constructor(private fileManager: FileManager,
               private folder: string,
               private originalUrl: string,
-              public hostUrl: string) {}
+              private hostUrl: string) {}
 
   addToQueue(url: string, fileType: string, folder: string) {
     const host = urlParser.parse(url);
@@ -32,43 +32,18 @@ export default class Loader {
     }
     const split = url.split('/');
     const filename = split[split.length - 1].replace('%', '_');
-    const subfolder = this.getLinkFolder(fileType);
+    const subfolder = getLinkFolder(fileType);
     const savePath = `./save/${folder}/${subfolder}/${filename}`;
 
     if (!this.resourcesQueue.get(savePath)) {
       this.resourcesQueue.set(savePath, {
-        url: this.normalizeUrl(url),
+        url: normalizeUrl(url, this.originalUrl),
         isLoaded: false,
         flags: {}}
       );
     }
     const sanitizedHost = removeEndSlash(this.hostUrl);
     return `${sanitizedHost}/${subfolder}/${filename}`;
-  }
-
-  getLinkFolder(linkType) {
-    const types = [
-      {
-        type: 'text/css',
-        folder: 'assets/css'
-      }, {
-        type: 'javascript',
-        folder: 'assets/js'
-      }, {
-        type: 'image',
-        folder: 'assets/images'
-      }
-    ];
-    const folder = types.find(item => item.type === linkType);
-    return folder ? folder.folder : 'assets/images';
-  }
-
-  normalizeUrl(url: string): string {
-    if (url.startsWith('http')) {
-      return url;
-    }
-
-    return `${removeEndSlash(this.originalUrl)}/${removeStartSlash(url)}`;
   }
 
   async loadResources() {
@@ -134,10 +109,11 @@ export default class Loader {
     });
   }
 
-  processCssFiles(filesList: string[], dd) {
+  processCssFiles() {
     return new Promise(async res => {
-      filesList.forEach(async (file) => {
-        await this.postProcessCSS(`./save/${dd.folder}/assets/css/${file}`, dd.folder);
+      const cssFilesList = await this.fileManager.getFolderContent(`${this.folder}/assets/css`);
+      cssFilesList.forEach(async (file) => {
+        await this.postProcessCSS(`./save/${this.folder}/assets/css/${file}`, this.folder);
         res();
       })
     });

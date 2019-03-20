@@ -3,10 +3,9 @@ const clear = require('clear');
 const figlet = require('figlet');
 const inquirer = require('inquirer');
 
-import Scrapper from './scrapper';
-import FileManagerCommands from './file-manager-commands';
+import Commands from './commands';
 
-const fCommands = new FileManagerCommands();
+const commands = new Commands();
 
 function main() {
   return new Promise(async (res) => {
@@ -19,25 +18,29 @@ function main() {
         {name: 'Scrap a new site', value: 1},
         {name: 'Serve', value: 2},
         {name: 'Deploy to gh-pages', value: 3},
-        {name: 'Exit', value: 4}
+        {name: 'Use a saved preset', value: 4},
+        {name: 'Exit', value: 5}
       ],
       default: 2,
     }]);
 
     switch (options.option) {
       case 0:
-        await fCommands.manageSites();
+        await commands.manageSites();
         break;
       case 1:
-        await fCommands.grabPage();
+        await commands.grabSite();
         break;
       case 2:
-        await fCommands.serveSite();
+        await commands.serveSite();
         break;
       case 3:
-        await fCommands.deployToGHPages();
+        await commands.deployToGHPages();
         break;
       case 4:
+        await commands.usePreset();
+        break;
+      case 5:
       default:
         process.exit(0);
     }
@@ -56,8 +59,6 @@ function main() {
     } catch (e) {
       console.log(chalk.red(chalk.bold(e)));
       process.exit(0);
-
     }
-
   }
 })();
