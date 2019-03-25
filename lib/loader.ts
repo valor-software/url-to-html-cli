@@ -7,7 +7,7 @@ const Spinner = require('cli-spinner').Spinner;
 
 import FileManager from './file-manager';
 import { settings } from './settings';
-import { getLinkFolder, normalizeUrl, removeEndSlash } from './utils';
+import { getLinkFolder, normalizeUrl, processImagesFromString, removeEndSlash } from './utils';
 
 interface Resource {
   url: string,
@@ -31,7 +31,7 @@ export default class Loader {
       return url;
     }
     const split = url.split('/');
-    const filename = split[split.length - 1].replace('%', '_');
+    const filename = split[split.length - 1].replace(/%/g, '_');
     const subfolder = getLinkFolder(fileType);
     const savePath = `./save/${folder}/${subfolder}/${filename}`;
 
@@ -112,10 +112,12 @@ export default class Loader {
   processCssFiles() {
     return new Promise(async res => {
       const cssFilesList = await this.fileManager.getFolderContent(`${this.folder}/assets/css`);
-      cssFilesList.forEach(async (file) => {
+      const cssFiles = cssFilesList.map(async file => {
         await this.postProcessCSS(`./save/${this.folder}/assets/css/${file}`, this.folder);
-        res();
-      })
+      });
+
+      await Promise.all(cssFiles);
+      res();
     });
   }
 
@@ -126,12 +128,11 @@ export default class Loader {
       }
       const content = await this.fileManager.read(filePath);
 
-      const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;()]*[-A-Z0-9+&@#\/%=~_|])/ig;
-      const outFB = content.toString().replace(urlRegex, (url) => {
+      const out = processImagesFromString(content, (url) => {
         return this.addToQueue(url, 'image', folder);
       });
 
-      await this.fileManager.directSave(filePath, outFB);
+      await this.fileManager.directSave(filePath, out);
       res();
     });
   }
