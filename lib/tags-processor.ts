@@ -1,4 +1,4 @@
-import { addExtension, removeEndSlash } from './utils';
+import { addExtension, processImagesFromString, removeEndSlash } from './utils';
 import Loader from './loader';
 
 export default class TagsProcessor {
@@ -33,6 +33,15 @@ export default class TagsProcessor {
 
   }
 
+  processMeta(item, folder) {
+    if (!item.attributes.content) {
+      return;
+    }
+    const content = item.attributes.content.value;
+    item.attributes.content.value = processImagesFromString(content, (url) => {
+      return this.loader.addToQueue(url, 'image', folder);
+    });
+  }
 
   processLink(item: any, folder) {
     if (!item.attributes.href) {
@@ -70,8 +79,7 @@ export default class TagsProcessor {
   processStyleAttr(item, folder) {
     if (item.attributes && item.attributes.style) {
       const style = item.attributes.style.value;
-      const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;()]*[-A-Z0-9+&@#\/%=~_|])/ig;
-      item.attributes.style.value = style.replace(urlRegex, (url) => {
+      item.attributes.style.value = processImagesFromString(style, (url) => {
         return this.loader.addToQueue(url, 'image', folder);
       });
     }

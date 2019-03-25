@@ -1,7 +1,3 @@
-// export function removeTrailingSlashes(link: string): string {
-//   return removeStartSlash(removeEndSlash(link));
-// }
-
 export function removeEndSlash(link: string): string {
   return link.replace(/#\/$/, '').replace(/\/$/, '');
 }
@@ -49,4 +45,10 @@ export function normalizeUrl(path: string, originalUrl): string {
   }
 
   return `${removeEndSlash(originalUrl)}/${removeStartSlash(path)}`;
+}
+
+export function processImagesFromString(txt: string, replacer): string {
+  const rgx = /(http(s?):)([()%/|.|\w|\s|-])*\.(?:png|jpg|jpeg|gif|svg)/ig;
+  return txt.toString().replace(rgx, replacer);
+
 }
