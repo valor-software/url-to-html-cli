@@ -8,7 +8,7 @@ const JSDOM = require('jsdom').JSDOM;
 import FileManager from './file-manager';
 import TagsProcessor from './tags-processor';
 import Loader from './loader';
-import { addExtension } from './utils';
+import { addExtension, getUniqueItems } from './utils';
 
 export default class Scrapper {
   tagsProcessor: TagsProcessor;
@@ -21,12 +21,31 @@ export default class Scrapper {
     this.host = answers.host;
     this.tagsProcessor = new TagsProcessor(this.loader);
 
-    let pages = [{
-      page: this.url,
-      isProcessed: false
-    }];
+    return new Promise(async (res) => {
+      let pages = [{
+        page: this.url,
+        isProcessed: false
+      }];
+      let isSitemap = false;
+      if (answers.sitemap || answers.sitemap !== '') {
+        try {
+          const sitemap = await this.loader.getContentByUrl(`${answers.url}/${answers.sitemap}`);
 
-    return new Promise(async (res, rej) => {
+          pages = sitemap
+            .match(/<loc>(.*?)<\/loc>/g)
+            .map(val => {
+              return {
+                page: val.replace(/<\/?loc>/g, ''),
+                isProcessed: false
+              };
+            });
+          isSitemap = true;
+          console.log(chalk.green(chalk.bold(`Sitemap processed. Found ${pages.length} links\n`)));
+        } catch (e) {
+          console.log(chalk.red(chalk.bold(e)));
+        }
+      }
+
       while(true) {
         const current = pages.find(p => !p.isProcessed);
 
@@ -40,25 +59,21 @@ export default class Scrapper {
         spinner.start();
         let newpages = await this.getPageHTML(currentUrl, answers.folder, answers.url);
 
-        newpages = newpages.reduce((list, item) => {
-          if (list.indexOf(item) === -1) {
-            list.push(item);
-          }
-          return list;
-        }, []);
+        if (!isSitemap) {
+          pages = pages.concat(
+            newpages
+              .filter(page => {
+                return (pages.findIndex(p => p.page === page)) === -1;
+              })
+              .map(page => {
+                return {
+                  page,
+                  isProcessed: false
+                }
+              }));
+        }
 
         pages.find(page => page.page === currentUrl).isProcessed = true;
-        pages = pages.concat(
-          newpages
-            .filter(page => {
-              return (pages.findIndex(p => p.page === page)) === -1;
-            })
-            .map(page => {
-              return {
-                page,
-                isProcessed: false
-              }
-            }));
 
         spinner.stop(true);
         console.log(currentUrl + chalk.green(' done'));
@@ -127,7 +142,7 @@ export default class Scrapper {
         }
 
         const dom = new JSDOM(body);
-        const links = this.getLinksList(dom.window.document.children, folder);
+        const links = getUniqueItems(this.getLinksList(dom.window.document.children, folder));
 
         const split = urlParser.parse(url).pathname.split('/');
         const pageName = split.pop();

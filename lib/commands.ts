@@ -6,7 +6,7 @@ import chalk from 'chalk';
 import FileManager from './file-manager'
 import Scrapper from './scrapper';
 import Loader from './loader';
-import { removeEndSlash } from './utils';
+import { removeEndSlash, removeStartSlash } from './utils';
 import { Publisher } from './publisher';
 
 export default class Commands {
@@ -102,7 +102,7 @@ export default class Commands {
     }, {
       name: 'url',
       type: 'input',
-      message: 'Specify a original URL? ',
+      message: 'Specify an original URL ',
       default: 'https://valor.webflow.io',
       validate: function (url) {
         if (!url || url === '') {
@@ -113,9 +113,13 @@ export default class Commands {
         }
       }
     }, {
+      name: 'sitemap',
+      type: 'input',
+      message: 'Path to sitemap(optional, can be left empty) '
+    }, {
       name: 'host',
       type: 'input',
-      message: 'Specify a URL for host inst? ',
+      message: 'Specify a URL for host inst ',
       default: 'http://localhost:3000',
       validate: function (url) {
         if (!url || url === '') {
@@ -128,6 +132,7 @@ export default class Commands {
     }]);
     answers.url = removeEndSlash(answers.url);
     answers.host = removeEndSlash(answers.host);
+    answers.sitemap = removeStartSlash(answers.sitemap);
 
     return new Promise(async (res, rej) => {
       console.log(chalk.green(chalk.bold('Preparing files structure\n')));
@@ -149,7 +154,7 @@ export default class Commands {
     const answers = await inquirer.prompt([{
       name: 'folder',
       type: 'list',
-      message: 'Select items to remove',
+      message: 'Select sources folder ',
       choices: list
         .map(key => {
           return {
@@ -175,6 +180,7 @@ export default class Commands {
       default: 'gh-pages'
     }]);
 
+    answers.repo = removeEndSlash(answers.repo);
     return Publisher.publishToGithub(answers);
   }
 
@@ -211,7 +217,8 @@ export default class Commands {
       await scrapper.scrap({
         url: preset.originalHost,
         host: preset.targetHost,
-        folder: randomFolderName
+        folder: randomFolderName,
+        sitemap: preset.sitemap
       });
 
 
