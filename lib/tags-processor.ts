@@ -17,7 +17,12 @@ export default class TagsProcessor {
         );
 
       }
-      if (!href.startsWith('http') && !href.startsWith('#')) {
+
+      if (!href.startsWith('http') &&
+          !href.startsWith('#') &&
+          !href.startsWith('mailto:') &&
+          !href.startsWith('tel:')
+      ) {
         linksList.push(`${url}${href}`);
         item.attributes.href.value = addExtension(host, href);
       }
