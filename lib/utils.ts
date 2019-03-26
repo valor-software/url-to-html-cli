@@ -50,5 +50,13 @@ export function normalizeUrl(path: string, originalUrl): string {
 export function processImagesFromString(txt: string, replacer): string {
   const rgx = /(http(s?):)([()%/|.|\w|\s|-])*\.(?:png|jpg|jpeg|gif|svg)/ig;
   return txt.toString().replace(rgx, replacer);
+}
 
+export function getUniqueItems<T>(list: T[]): T[] {
+  return list.reduce((list: T[], item: T) => {
+    if (list.indexOf(item) === -1) {
+      list.push(item);
+    }
+    return list;
+  }, []);
 }

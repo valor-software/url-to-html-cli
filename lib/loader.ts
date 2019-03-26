@@ -65,7 +65,6 @@ export default class Loader {
         console.log(chalk.red(error));
       })
     }
-
   }
 
   downloadResource(filename, resource, meta) {
@@ -105,6 +104,49 @@ export default class Loader {
           resolve();
         });
         piped.pipe(this.fileManager.getWriteStream(filename));
+      });
+    });
+  }
+
+  getContentByUrl(url: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const spinner = new Spinner({text: `Processing sitemap %s`});
+      spinner.setSpinnerString(27);
+      spinner.start();
+      request({
+        url: url,
+        method: 'head'
+      }, (err, res) => {
+        if (err) {
+          console.log(err);
+          spinner.stop(true);
+          reject('Sitemap loading error');
+
+          return;
+        }
+
+        if (res.statusCode !== 200) {
+          spinner.stop(true);
+          reject('Sitemap not found');
+
+          return;
+        }
+
+        request({
+          url: url,
+          method: 'get'
+        }, (error, response) => {
+          if (error) {
+            console.log(error);
+            spinner.stop(true);
+            reject('Sitemap loading error');
+
+            return;
+          }
+          spinner.stop(true);
+          console.log(chalk.green(chalk.bold('Sitemap loaded successfully')));
+          resolve(response.body);
+        });
       });
     });
   }

@@ -5,5 +5,20 @@
     "targetHost": "https://macroorganizm.github.io/test-scrapper",
     "targetBranch": "master",
     "githubRepo": "git@github.com:macroorganizm/test-scrapper.git"
+  },
+  "1": {
+    "description": "valor webflow -> Mike's gh-pages",
+    "originalHost": "https://valor.webflow.io",
+    "targetHost": "https://mikhailvoloshin.github.io/scrapper",
+    "targetBranch": "master",
+    "githubRepo": "git@github.com:mikhailvoloshin/scrapper.git"
+  },
+  "2": {
+    "description": "Ngtalks -> macroorganizm's gh-pages(with sitemap)",
+    "originalHost": "https://ngtalks.io",
+    "targetHost": "https://macroorganizm.github.io/test-scrapper",
+    "targetBranch": "master",
+    "githubRepo": "git@github.com:macroorganizm/test-scrapper.git",
+    "sitemap": "sitemap.xml"
   }
 }
