@@ -33,6 +33,15 @@ export function getLinkFolder(linkType) {
     }, {
       type: 'image',
       folder: 'assets/images'
+    }, {
+      type: 'js',
+      folder: 'assets/js'
+    }, {
+      type: 'webm',
+      folder: 'assets/videos'
+    }, {
+      type: 'mp4',
+      folder: 'assets/videos'
     }
   ];
   const folder = types.find(item => item.type === linkType);
@@ -47,9 +56,13 @@ export function normalizeUrl(path: string, originalUrl): string {
   return `${removeEndSlash(originalUrl)}/${removeStartSlash(path)}`;
 }
 
-export function processImagesFromString(txt: string, replacer): string {
-  const rgx = /(http(s?):)([()%/|.|\w|\s|-])*\.(?:png|jpg|jpeg|gif|svg)/ig;
+export function processResourcesFromString(txt: string, replacer): string {
+  const rgx = /(http(s?):)([()%/|.|\w|\s|-])*\.(?:png|jpg|jpeg|gif|svg|mp4|webm|js|css)/ig;
   return txt.toString().replace(rgx, replacer);
+}
+
+export function getResExtension(url: string): string {
+  return url.split('.').pop();
 }
 
 export function getUniqueItems<T>(list: T[]): T[] {

@@ -1,4 +1,9 @@
-import { addExtension, processImagesFromString, removeEndSlash } from './utils';
+import {
+  addExtension,
+  getResExtension,
+  processResourcesFromString,
+  removeEndSlash, removeStartSlash
+} from './utils';
 import Loader from './loader';
 
 export default class TagsProcessor {
@@ -23,29 +28,12 @@ export default class TagsProcessor {
           !href.startsWith('mailto:') &&
           !href.startsWith('tel:')
       ) {
-        linksList.push(`${url}${href}`);
-        item.attributes.href.value = addExtension(host, href);
+        const normalizedHref = '/' + removeStartSlash(href);
+        linksList.push(`${url}${normalizedHref}`);
+        item.attributes.href.value = addExtension(host, normalizedHref);
       }
     }
     return linksList;
-  }
-  
-  processScript(item: any, folder) {
-    if (!item.attributes || !(item.attributes as any).src) {
-      return;
-    }
-    item.attributes.src.value = this.loader.addToQueue(item.attributes.src.value, 'javascript', folder);
-
-  }
-
-  processMeta(item, folder) {
-    if (!item.attributes.content) {
-      return;
-    }
-    const content = item.attributes.content.value;
-    item.attributes.content.value = processImagesFromString(content, (url) => {
-      return this.loader.addToQueue(url, 'image', folder);
-    });
   }
 
   processLink(item: any, folder) {
@@ -58,35 +46,22 @@ export default class TagsProcessor {
     item.attributes.href.value = this.loader.addToQueue(item.attributes.href.value, linkType, folder);
   }
 
-  processImage(item, folder) {
-    if (!item.attributes || !(item.attributes as any).src || (item.attributes as any).src.value === '') {
+  processDataAttrs(item, folder) {
+    if (!item.attributes || item.attributes.length === 0) {
       return;
     }
-    const srcVal = (item.attributes as any).src.value;
-    const srcset = (item.attributes as any).srcset;
-    if (srcset && srcset.value) {
-      const srcsetVals = srcset.value
-        .split(',')
-        .map(srcsetItem => srcsetItem.trim().split(' '))
-        .map(item => item[0]);
-      if (srcsetVals && srcsetVals.length > 0) {
-        srcsetVals.forEach(val => {
-          (item.attributes as any).srcset.value =
-            (item.attributes as any).srcset.value
-              .replace(val, this.loader.addToQueue(val, 'image', folder));
 
-        });
+    Object.keys(item.attributes).forEach(key => {
+      const attribute = item.attributes[key];
+      if (attribute.name === 'href') {
+        return;
       }
-    }
-    (item.attributes as any).src.value = this.loader.addToQueue(srcVal, 'image', folder);
-  }
-
-  processStyleAttr(item, folder) {
-    if (item.attributes && item.attributes.style) {
-      const style = item.attributes.style.value;
-      item.attributes.style.value = processImagesFromString(style, (url) => {
-        return this.loader.addToQueue(url, 'image', folder);
+      const attrVal = attribute.value;
+      item.attributes[key].value = processResourcesFromString(attrVal, (url) => {
+        const ext = getResExtension(url);
+        
+        return this.loader.addToQueue(url, ext, folder);
       });
-    }
+    });
   }
 }

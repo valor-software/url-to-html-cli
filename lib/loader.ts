@@ -7,7 +7,7 @@ const Spinner = require('cli-spinner').Spinner;
 
 import FileManager from './file-manager';
 import { settings } from './settings';
-import { getLinkFolder, normalizeUrl, processImagesFromString, removeEndSlash } from './utils';
+import { getLinkFolder, normalizeUrl, processResourcesFromString, removeEndSlash } from './utils';
 
 interface Resource {
   url: string,
@@ -31,7 +31,7 @@ export default class Loader {
       return url;
     }
     const split = url.split('/');
-    const filename = split[split.length - 1].replace(/%/g, '_');
+    const filename = split[split.length - 1].replace(/[\s%]/g, '_');
     const subfolder = getLinkFolder(fileType);
     const savePath = `./save/${folder}/${subfolder}/${filename}`;
 
@@ -170,7 +170,7 @@ export default class Loader {
       }
       const content = await this.fileManager.read(filePath);
 
-      const out = processImagesFromString(content, (url) => {
+      const out = processResourcesFromString(content, (url) => {
         return this.addToQueue(url, 'image', folder);
       });
 
