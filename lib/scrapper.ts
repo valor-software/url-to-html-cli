@@ -103,9 +103,6 @@ export default class Scrapper {
           linksList = linksList
             .concat(this.tagsProcessor.processATag(item, this.url, this.host));
           break;
-        case 'meta':
-          this.tagsProcessor.processMeta(item, folder);
-          break;
         case 'base':
           if (item.attributes.href) {
             item.attributes.href.value = this.host;
@@ -114,16 +111,10 @@ export default class Scrapper {
         case 'link':
           this.tagsProcessor.processLink(item, folder);
           break;
-        case 'script':
-          this.tagsProcessor.processScript(item, folder);
-          break;
-        case 'img':
-          this.tagsProcessor.processImage(item, folder);
-          break;
         default:
       }
 
-      this.tagsProcessor.processStyleAttr(item, folder);
+      this.tagsProcessor.processDataAttrs(item, folder);
       if (!item.children || item.children.length === 0) {
         return;
       }

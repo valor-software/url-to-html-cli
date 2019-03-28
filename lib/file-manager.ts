@@ -17,10 +17,11 @@ export default class FileManager {
         await mkdir(`./save/${folderName}/assets`);
 
         await Promise.all([
-          mkdir(`./save/${folderName}/assets/fonts`) as any,
-          mkdir(`./save/${folderName}/assets/images`) as any,
-          mkdir(`./save/${folderName}/assets/css`) as any,
-          mkdir(`./save/${folderName}/assets/js`)  as any,
+          mkdir(`./save/${folderName}/assets/fonts`),
+          mkdir(`./save/${folderName}/assets/images`),
+          mkdir(`./save/${folderName}/assets/videos`),
+          mkdir(`./save/${folderName}/assets/css`),
+          mkdir(`./save/${folderName}/assets/js`)
         ]);
         res();
       } catch (e) {
