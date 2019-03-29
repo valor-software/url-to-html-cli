@@ -8,6 +8,7 @@ const mkdir = promisify(require('fs').mkdir);
 const dirExists = promisify(require('fs').access);
 const readdir = promisify(require('fs').readdir);
 const readFile = promisify(require('fs').readFile);
+const copyFile = promisify(require('fs').copyFile);
 
 export default class FileManager {
   createSiteStructure(folderName: string) {
@@ -71,10 +72,14 @@ export default class FileManager {
 
 
   getFolderContent(folderName) {
-    return readdir(`./save/${folderName}`);
+    return readdir(folderName);
   }
 
   async getList() {
     return readdir('./save');
+  }
+
+  async copy(fromPath, toFolder) {
+    return copyFile(fromPath, toFolder);
   }
 }

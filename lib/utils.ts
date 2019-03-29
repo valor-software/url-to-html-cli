@@ -23,8 +23,10 @@ export function addExtension(host: string, link: string): string {
 }
 
 export function getLinkFolder(linkType) {
-  const types = [
-    {
+  const types = [{
+      type: 'css',
+      folder: 'assets/css'
+    }, {
       type: 'text/css',
       folder: 'assets/css'
     }, {
@@ -42,8 +44,7 @@ export function getLinkFolder(linkType) {
     }, {
       type: 'mp4',
       folder: 'assets/videos'
-    }
-  ];
+  }];
   const folder = types.find(item => item.type === linkType);
   return folder ? folder.folder : 'assets/images';
 }
