@@ -27,7 +27,7 @@ export default class Scrapper {
         isProcessed: false
       }];
       let isSitemap = false;
-      if (answers.sitemap || answers.sitemap !== '') {
+      if (answers.sitemap && answers.sitemap !== '') {
         try {
           const sitemap = await this.loader.getContentByUrl(`${answers.url}/${answers.sitemap}`);
 
@@ -91,7 +91,19 @@ export default class Scrapper {
 
       res();
     });
+  }
 
+  addFiles(filesList: string[], folder) {
+    return new Promise(async (res) => {
+      console.log(chalk.green(chalk.yellow('Adding files')));
+      const toCopy = filesList.map(async file => {
+        console.log(chalk.green(file));
+        await this.fManager.copy(`./files/${file}`, `./save/${folder}/${file}`);
+      });
+      await Promise.all(toCopy);
+      console.log(chalk.green(chalk.bold('All files were added\n')));
+      res();
+    });
   }
 
   getLinksList(inp, folder) {

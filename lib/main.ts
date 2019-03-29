@@ -44,7 +44,8 @@ function main() {
       default:
         process.exit(0);
     }
-
+    console.log(chalk.green(chalk.bold('Finished')));
+    console.log('\n');
     res();
   });
 }

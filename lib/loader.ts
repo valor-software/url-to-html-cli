@@ -153,7 +153,8 @@ export default class Loader {
 
   processCssFiles() {
     return new Promise(async res => {
-      const cssFilesList = await this.fileManager.getFolderContent(`${this.folder}/assets/css`);
+      // todo: refactor next
+      const cssFilesList = await this.fileManager.getFolderContent(`./save/${this.folder}/assets/css`);
       const cssFiles = cssFilesList.map(async file => {
         await this.postProcessCSS(`./save/${this.folder}/assets/css/${file}`, this.folder);
       });

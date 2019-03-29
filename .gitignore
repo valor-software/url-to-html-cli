@@ -39,3 +39,9 @@ newrelic_agent.log
 # System Files
 .DS_Store
 Thumbs.db
+
+/files/*
+!/files/.keep
+
+/save/*
+!/save/*.json

@@ -57,8 +57,15 @@ export default class Commands {
 
       const options = await inquirer.prompt([{
         name: 'folders',
-        type: 'checkbox',
-        message: 'Select items to remove',
+        type: 'list',
+        message: 'Select folder to serve',
+        validate: function (value) {
+          if (!value || value === '') {
+            return ('You should choose');
+          } else {
+            return true;
+          }
+        },
         choices: list
           .map(key => {
             return {
@@ -103,7 +110,8 @@ export default class Commands {
       name: 'url',
       type: 'input',
       message: 'Specify an original URL ',
-      default: 'https://valor.webflow.io',
+      default: 'http://hf-productions-design.webflow.io/',
+      // default: 'https://valor.webflow.io',
       validate: function (url) {
         if (!url || url === '') {
           // || !url.match(new RegExp(/[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi))) {
@@ -143,8 +151,48 @@ export default class Commands {
 
       await scrapper.scrap(answers);
 
+      let savedFiles = await this.fileManager.getFolderContent('./files');
+      savedFiles = savedFiles.filter(fName => fName !== '.keep');
+
+      if(savedFiles.length === 0) {
+        return res();
+      }
+
+      const confirm = await inquirer.prompt([{
+        name: 'confirm',
+        type: 'confirm',
+        default: false,
+        message: 'Do you want to add some stored files? '
+      }]);
+
+      if (!confirm.confirm) {
+        return res();
+      }
+
+      const options = await inquirer.prompt([{
+        name: 'files',
+        type: 'checkbox',
+        message: 'Select items to remove',
+        choices: savedFiles
+          .map(key => {
+            return {
+              value: key,
+              name: key
+            }
+          })
+          .concat([{value: 'cancel', name: 'Cancel'}])
+      }]);
+
+      if (options.files.includes('cancel') || options.files.length === 0) {
+        console.log(chalk.yellow('Canceled'));
+        return res();
+      }
+
+      await scrapper.addFiles(options.files, answers.folder);
       res();
     });
+
+
   }
 
   async deployToGHPages() {
@@ -221,7 +269,9 @@ export default class Commands {
         sitemap: preset.sitemap
       });
 
-
+      if (preset.files && preset.files.length > 0) {
+        await scrapper.addFiles(preset.files, randomFolderName);
+      }
 
       await Publisher.publishToGithub({
         folder: randomFolderName,

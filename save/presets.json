@@ -4,21 +4,41 @@
     "originalHost": "https://valor.webflow.io",
     "targetHost": "https://macroorganizm.github.io/test-scrapper",
     "targetBranch": "master",
-    "githubRepo": "git@github.com:macroorganizm/test-scrapper.git"
+    "githubRepo": "git@github.com:macroorganizm/test-scrapper.git",
+    "files": []
   },
   "1": {
     "description": "valor webflow -> Mike's gh-pages",
     "originalHost": "https://valor.webflow.io",
     "targetHost": "https://mikhailvoloshin.github.io/scrapper",
     "targetBranch": "master",
-    "githubRepo": "git@github.com:mikhailvoloshin/scrapper.git"
+    "githubRepo": "git@github.com:mikhailvoloshin/scrapper.git",
+    "files": []
   },
   "2": {
-    "description": "Ngtalks -> macroorganizm's gh-pages(with sitemap)",
+    "description": "Ngtalks -> macroorganizm's gh-pages(with sitemap and robots)",
     "originalHost": "https://ngtalks.io",
     "targetHost": "https://macroorganizm.github.io/test-scrapper",
     "targetBranch": "master",
     "githubRepo": "git@github.com:macroorganizm/test-scrapper.git",
-    "sitemap": "sitemap.xml"
+    "sitemap": "sitemap.xml",
+    "files": ["robots.txt"]
+  },
+  "3": {
+    "description": "Valor Live(no sitemap)",
+    "originalHost": "https://valor.webflow.io",
+    "targetHost": "https://valor-software.com",
+    "targetBranch": "master",
+    "githubRepo": "git@github.com:valor-software/valor-software.github.io.git",
+    "files": []
+  },
+  "4": {
+    "description": "Valor Live (Sitemap based)",
+    "originalHost": "https://valor.webflow.io",
+    "targetHost": "https://valor-software.com",
+    "targetBranch": "master",
+    "githubRepo": "git@github.com:valor-software/valor-software.github.io.git",
+    "sitemap": "sitemap.xml",
+    "files": ["robots.txt"]
   }
 }
