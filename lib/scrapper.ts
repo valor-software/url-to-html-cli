@@ -12,11 +12,13 @@ import { addExtension, getUniqueItems } from './utils';
 
 export default class Scrapper {
   tagsProcessor: TagsProcessor;
+  scrappedPages: {page: string; isProcessed: boolean}[] = [];
   url: string;
   host: string;
   constructor(private fManager: FileManager, private loader: Loader) {}
 
   scrap(answers) {
+    this.scrappedPages = [];
     this.url = answers.url;
     this.host = answers.host;
     this.tagsProcessor = new TagsProcessor(this.loader);
@@ -88,22 +90,41 @@ export default class Scrapper {
       await this.loader.loadResources();
 
       console.log(chalk.green(chalk.bold('Scrapping complete\n')));
+      this.scrappedPages = pages;
 
       res();
     });
   }
 
-  addFiles(filesList: string[], folder) {
+  addFiles(filesList: {path: string; name: string}[], folder) {
     return new Promise(async (res) => {
       console.log(chalk.green(chalk.yellow('Adding files')));
       const toCopy = filesList.map(async file => {
-        console.log(chalk.green(file));
-        await this.fManager.copy(`./files/${file}`, `./save/${folder}/${file}`);
+        await this.fManager.copy(file.path, `./save/${folder}/${file.name}`);
       });
       await Promise.all(toCopy);
       console.log(chalk.green(chalk.bold('All files were added\n')));
       res();
     });
+  }
+
+  generateSitemap(folder: string) {
+    const forbiddenPatterns = ['/cdn-cgi/l/'];
+    const sitemap =
+      [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+      ].concat(
+        this.scrappedPages
+          .filter(page =>
+            typeof forbiddenPatterns.find(pattern =>
+              page.page.indexOf(pattern) > -1) === 'undefined')
+          .map(item => `  <url><loc>${item.page}</loc></url>`)
+      )
+      .concat(['</urlset>'])
+      .join('\n');
+
+    return this.fManager.save(folder, 'sitemap.xml', sitemap);
   }
 
   getLinksList(inp, folder) {
@@ -170,7 +191,7 @@ export default class Scrapper {
         const urlDomain = originalUrl.replace(/(^\w+:|^)\/\//, '');
         const fileBody = dom.window.document.documentElement.outerHTML.replace(urlDomain, this.host);
 
-        this.fManager.save(`${fullPath}/`, filename, fileBody);
+        this.fManager.save(fullPath, filename, fileBody);
 
         res(links);
       });

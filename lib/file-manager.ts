@@ -36,7 +36,7 @@ export default class FileManager {
   }
 
   async save(folder: string, fname: string, content: any) {
-    return writeFile(`./save/${folder}${fname}`, content);
+    return writeFile(`./save/${folder}/${fname}`, content);
   }
 
   async directSave(path: string, content: any) {
@@ -70,6 +70,26 @@ export default class FileManager {
     return fs.createWriteStream(filename);
   }
 
+  getDeepFolder(folderName: string) {
+    return new Promise(async (res) => {
+      const result = await readdir(folderName, {withFileTypes: true});
+      let folderContent = [];
+      for (const item of result) {
+        if (item.isFile()) {
+          folderContent.push({
+            path: `${folderName}/${item.name}`,
+            name: item.name
+          });
+          continue;
+        }
+        const sub = await this.getDeepFolder(`${folderName}/${item.name}`);
+
+        folderContent = folderContent.concat(sub);
+      }
+
+      res(folderContent);
+    });
+  }
 
   getFolderContent(folderName) {
     return readdir(folderName);
