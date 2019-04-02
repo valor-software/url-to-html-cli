@@ -1,11 +1,15 @@
 {
   "0": {
-    "description": "valor webflow -> macroorganizm's gh-pages",
+    "description": "valor webflow -> macroorganizm's gh-pages(gen sitemap, add robots)",
     "originalHost": "https://valor.webflow.io",
     "targetHost": "https://macroorganizm.github.io/test-scrapper",
     "targetBranch": "master",
     "githubRepo": "git@github.com:macroorganizm/test-scrapper.git",
-    "files": []
+    "files": [{
+      "path": "./files/robots.txt",
+      "name": "robots.txt"
+    }],
+    "generateSitemap": true
   },
   "1": {
     "description": "valor webflow -> Mike's gh-pages",
@@ -22,7 +26,10 @@
     "targetBranch": "master",
     "githubRepo": "git@github.com:macroorganizm/test-scrapper.git",
     "sitemap": "sitemap.xml",
-    "files": ["robots.txt"]
+    "files": [{
+      "path": "./files/robots.txt",
+      "name": "robots.txt"
+    }]
   },
   "3": {
     "description": "Valor Live(no sitemap)",
@@ -39,6 +46,9 @@
     "targetBranch": "master",
     "githubRepo": "git@github.com:valor-software/valor-software.github.io.git",
     "sitemap": "sitemap.xml",
-    "files": ["robots.txt"]
+    "files": [{
+      "path": "./files/robots.txt",
+      "name": "robots.txt"
+    }]
   }
 }

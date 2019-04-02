@@ -110,7 +110,8 @@ export default class Commands {
       name: 'url',
       type: 'input',
       message: 'Specify an original URL ',
-      default: 'http://hf-productions-design.webflow.io/',
+      // default: 'http://hf-productions-design.webflow.io/',
+      default: 'http://ngtalks.io/',
       // default: 'https://valor.webflow.io',
       validate: function (url) {
         if (!url || url === '') {
@@ -151,14 +152,27 @@ export default class Commands {
 
       await scrapper.scrap(answers);
 
-      let savedFiles = await this.fileManager.getFolderContent('./files');
-      savedFiles = savedFiles.filter(fName => fName !== '.keep');
+      let confirm = await inquirer.prompt([{
+        name: 'confirm',
+        type: 'confirm',
+        default: false,
+        message: 'Do you want to generate a sitemap file? '
+      }]);
+
+      if (confirm.confirm) {
+        await scrapper.generateSitemap(answers.folder);
+
+        console.log(chalk.green(chalk.bold('Sitemap generated\n')));
+      }
+
+      let savedFiles = await this.fileManager.getDeepFolder('./files') as any[];
+      savedFiles = savedFiles.filter(file => file.name !== '.keep');
 
       if(savedFiles.length === 0) {
         return res();
       }
 
-      const confirm = await inquirer.prompt([{
+      confirm = await inquirer.prompt([{
         name: 'confirm',
         type: 'confirm',
         default: false,
@@ -177,7 +191,7 @@ export default class Commands {
           .map(key => {
             return {
               value: key,
-              name: key
+              name: key.path
             }
           })
           .concat([{value: 'cancel', name: 'Cancel'}])
@@ -269,6 +283,11 @@ export default class Commands {
         sitemap: preset.sitemap
       });
 
+      if (preset.generateSitemap) {
+        await scrapper.generateSitemap(randomFolderName);
+        console.log(chalk.green(chalk.bold('Sitemap generated\n')));
+      }
+
       if (preset.files && preset.files.length > 0) {
         await scrapper.addFiles(preset.files, randomFolderName);
       }
@@ -288,4 +307,3 @@ export default class Commands {
     });
   }
 }
-
