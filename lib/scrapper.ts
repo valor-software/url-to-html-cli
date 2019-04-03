@@ -8,11 +8,11 @@ const JSDOM = require('jsdom').JSDOM;
 import FileManager from './file-manager';
 import TagsProcessor from './tags-processor';
 import Loader from './loader';
-import { addExtension, getUniqueItems } from './utils';
+import { addExtension, getUniqueItems, removeProtocol } from './utils';
 
 export default class Scrapper {
   tagsProcessor: TagsProcessor;
-  scrappedPages: {page: string; isProcessed: boolean}[] = [];
+  scrappedPages: string[] = [];
   url: string;
   host: string;
   constructor(private fManager: FileManager, private loader: Loader) {}
@@ -90,8 +90,6 @@ export default class Scrapper {
       await this.loader.loadResources();
 
       console.log(chalk.green(chalk.bold('Scrapping complete\n')));
-      this.scrappedPages = pages;
-
       res();
     });
   }
@@ -110,6 +108,9 @@ export default class Scrapper {
 
   generateSitemap(folder: string) {
     const forbiddenPatterns = ['/cdn-cgi/l/'];
+    const host = removeProtocol(this.host);
+    const url = removeProtocol(this.url);
+
     const sitemap =
       [
         '<?xml version="1.0" encoding="UTF-8"?>',
@@ -118,8 +119,12 @@ export default class Scrapper {
         this.scrappedPages
           .filter(page =>
             typeof forbiddenPatterns.find(pattern =>
-              page.page.indexOf(pattern) > -1) === 'undefined')
-          .map(item => `  <url><loc>${item.page}</loc></url>`)
+              page.indexOf(pattern) > -1) === 'undefined')
+          .map(item => {
+            const finalPage = item.replace(url, host);
+
+            return `  <url><loc>${finalPage}</loc></url>`;
+          })
       )
       .concat(['</urlset>'])
       .join('\n');
@@ -158,7 +163,7 @@ export default class Scrapper {
   }
 
   getPageHTML(url: string, folder: string, originalUrl: string): Promise<string[]> {
-
+    this.scrappedPages.push(url);
     return new Promise(async (res, rej) => {
       await request(url, async (err, resp, body) => {
         if (err) {
