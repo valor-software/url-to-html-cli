@@ -28,7 +28,7 @@ export default class TagsProcessor {
           !href.startsWith('mailto:') &&
           !href.startsWith('tel:')
       ) {
-        const normalizedHref = '/' + removeStartSlash(href);
+        const normalizedHref = href !== '' ? '/' + removeStartSlash(href) : '';
         linksList.push(`${url}${normalizedHref}`);
         item.attributes.href.value = addExtension(host, normalizedHref);
       }
