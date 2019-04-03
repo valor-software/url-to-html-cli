@@ -119,7 +119,10 @@ export default class Scrapper {
           .filter(page =>
             typeof forbiddenPatterns.find(pattern =>
               page.page.indexOf(pattern) > -1) === 'undefined')
-          .map(item => `  <url><loc>${item.page}</loc></url>`)
+          .map(item => {
+            const finalPage = item.page.replace(this.url, this.host);
+            return `  <url><loc>${finalPage}</loc></url>`;
+          })
       )
       .concat(['</urlset>'])
       .join('\n');
