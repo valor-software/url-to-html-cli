@@ -74,3 +74,7 @@ export function getUniqueItems<T>(list: T[]): T[] {
     return list;
   }, []);
 }
+
+export function removeProtocol(text: string): string {
+  return text.replace(/(http(s?):\/\/)/g, '');
+}
