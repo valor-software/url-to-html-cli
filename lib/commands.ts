@@ -8,6 +8,7 @@ import Scrapper from './scrapper';
 import Loader from './loader';
 import { removeEndSlash, removeStartSlash } from './utils';
 import { Publisher } from './publisher';
+import { postProcessors } from './postprocessors';
 
 export default class Commands {
   private fileManager = new FileManager();
@@ -111,8 +112,9 @@ export default class Commands {
       type: 'input',
       message: 'Specify an original URL ',
       // default: 'http://hf-productions-design.webflow.io/',
-      default: 'http://ngtalks.io/',
+      // default: 'http://ngtalks.io/',
       // default: 'https://valor.webflow.io',
+      default: 'https://table-p.webflow.io',
       validate: function (url) {
         if (!url || url === '') {
           // || !url.match(new RegExp(/[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi))) {
@@ -152,61 +154,63 @@ export default class Commands {
 
       await scrapper.scrap(answers);
 
-      let confirm = await inquirer.prompt([{
-        name: 'confirm',
-        type: 'confirm',
-        default: false,
-        message: 'Do you want to generate a sitemap file? '
-      }]);
-
-      if (confirm.confirm) {
-        await scrapper.generateSitemap(answers.folder);
-
-        console.log(chalk.green(chalk.bold('Sitemap generated\n')));
-      }
-
-      let savedFiles = await this.fileManager.getDeepFolder('./files') as any[];
+      let savedFiles = await this.fileManager.getFilesList('./files') as any[];
       savedFiles = savedFiles.filter(file => file.name !== '.keep');
 
-      if(savedFiles.length === 0) {
-        return res();
+      if(savedFiles.length > 0) {
+        const confirm = await inquirer.prompt([{
+          name: 'confirm',
+          type: 'confirm',
+          default: false,
+          message: 'Do you want to add some stored files? '
+        }]);
+
+        if (confirm.confirm) {
+          const options = await inquirer.prompt([{
+            name: 'files',
+            type: 'checkbox',
+            message: 'Select items to remove',
+            choices: savedFiles
+              .map(key => {
+                return {
+                  value: key,
+                  name: key.path
+                }
+              })
+              .concat([{value: 'cancel', name: 'Cancel'}])
+          }]);
+
+          if (!options.files.includes('cancel') && options.files.length > 0) {
+            await scrapper.addFiles(options.files, answers.folder);
+          }
+        }
       }
 
-      confirm = await inquirer.prompt([{
-        name: 'confirm',
-        type: 'confirm',
-        default: false,
-        message: 'Do you want to add some stored files? '
-      }]);
-
-      if (!confirm.confirm) {
-        return res();
-      }
-
-      const options = await inquirer.prompt([{
-        name: 'files',
+      const selectedPostProcessors = await inquirer.prompt([{
+        name: 'items',
         type: 'checkbox',
-        message: 'Select items to remove',
-        choices: savedFiles
+        message: 'Select post processors to execute',
+        choices: Object.keys(postProcessors)
           .map(key => {
             return {
               value: key,
-              name: key.path
+              name: key
             }
           })
           .concat([{value: 'cancel', name: 'Cancel'}])
       }]);
 
-      if (options.files.includes('cancel') || options.files.length === 0) {
-        console.log(chalk.yellow('Canceled'));
-        return res();
-      }
+      await this.applyPostProcessors(selectedPostProcessors.items, answers.folder, this.fileManager, scrapper);
 
-      await scrapper.addFiles(options.files, answers.folder);
       res();
     });
+  }
 
-
+  async applyPostProcessors(ppNames, folder, fileManager, scrapper) {
+    for (const postProcessorName of ppNames) {
+      const processor = new postProcessors[postProcessorName](folder, fileManager, scrapper);
+      await processor.process();
+    }
   }
 
   async deployToGHPages() {
@@ -248,7 +252,7 @@ export default class Commands {
 
   async usePreset() {
     let presetsList = await this.fileManager.read('./save/presets.json');
-    presetsList = Object.values(JSON.parse(presetsList.toString()));
+    presetsList = Object.values(JSON.parse(presetsList));
 
     const answers = await inquirer.prompt([{
       name: 'preset',
@@ -283,9 +287,8 @@ export default class Commands {
         sitemap: preset.sitemap
       });
 
-      if (preset.generateSitemap) {
-        await scrapper.generateSitemap(randomFolderName);
-        console.log(chalk.green(chalk.bold('Sitemap generated\n')));
+      if (preset.postprocessors && preset.postprocessors.length > 0) {
+        await this.applyPostProcessors(preset.postprocessors, randomFolderName, this.fileManager, scrapper);
       }
 
       if (preset.files && preset.files.length > 0) {

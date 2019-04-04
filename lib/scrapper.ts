@@ -106,32 +106,6 @@ export default class Scrapper {
     });
   }
 
-  generateSitemap(folder: string) {
-    const forbiddenPatterns = ['/cdn-cgi/l/'];
-    const host = removeProtocol(this.host);
-    const url = removeProtocol(this.url);
-
-    const sitemap =
-      [
-        '<?xml version="1.0" encoding="UTF-8"?>',
-        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-      ].concat(
-        this.scrappedPages
-          .filter(page =>
-            typeof forbiddenPatterns.find(pattern =>
-              page.indexOf(pattern) > -1) === 'undefined')
-          .map(item => {
-            const finalPage = item.replace(url, host);
-
-            return `  <url><loc>${finalPage}</loc></url>`;
-          })
-      )
-      .concat(['</urlset>'])
-      .join('\n');
-
-    return this.fManager.save(folder, 'sitemap.xml', sitemap);
-  }
-
   getLinksList(inp, folder) {
     // array for saving found internal links
     let linksList = [];
