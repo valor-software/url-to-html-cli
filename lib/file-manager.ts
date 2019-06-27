@@ -32,7 +32,7 @@ export default class FileManager {
   }
 
   async read(path: string) {
-    return readFile(path);
+    return readFile(path, {encoding: 'utf8'});
   }
 
   async save(folder: string, fname: string, content: any) {
@@ -70,8 +70,8 @@ export default class FileManager {
     return fs.createWriteStream(filename);
   }
 
-  getDeepFolder(folderName: string) {
-    return new Promise(async (res) => {
+  getFilesList(folderName: string, excludeFoldersList = []): Promise<{name: string; path: string}[]> {
+    return new Promise(async res => {
       const result = await readdir(folderName, {withFileTypes: true});
       let folderContent = [];
       for (const item of result) {
@@ -82,9 +82,10 @@ export default class FileManager {
           });
           continue;
         }
-        const sub = await this.getDeepFolder(`${folderName}/${item.name}`);
-
-        folderContent = folderContent.concat(sub);
+        if (excludeFoldersList.indexOf(`${folderName}/${item.name}`) === -1) {
+          const sub = await this.getFilesList(`${folderName}/${item.name}`, excludeFoldersList);
+          folderContent = folderContent.concat(sub);
+        }
       }
 
       res(folderContent);
