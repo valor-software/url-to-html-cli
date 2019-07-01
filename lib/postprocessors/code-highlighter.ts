@@ -28,6 +28,11 @@ export default class CodeHighlighter extends Postprocessor {
       const spinner = new Spinner({text: `${file.path} %s`});
       spinner.setSpinnerString(27);
       spinner.start();
+      if (file.path.indexOf('.html') === -1) {
+        spinner.stop(true);
+        console.log(file.path + chalk.yellow(' skipped'));
+        continue;
+      }
       const fileContent = await this.fileManager.read(file.path);
       const dom = new JSDOM(fileContent);
       const richsnippets = dom.window.document.querySelectorAll('.w-richtext');
