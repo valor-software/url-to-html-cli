@@ -200,7 +200,11 @@ export default class Commands {
           .concat([{value: 'cancel', name: 'Cancel'}])
       }]);
 
-      await this.applyPostProcessors(selectedPostProcessors.items, answers.folder, this.fileManager, scrapper);
+      if (selectedPostProcessors.items &&
+          selectedPostProcessors.items.length > 0 &&
+          !selectedPostProcessors.items.includes('cancel')) {
+        await this.applyPostProcessors(selectedPostProcessors.items, answers.folder, this.fileManager, scrapper);
+      }
 
       res();
     });
