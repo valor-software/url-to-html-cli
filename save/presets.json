@@ -5,7 +5,10 @@
     "targetHost": "https://valor-software.com",
     "targetBranch": "master",
     "githubRepo": "git@github.com:valor-software/valor-software.github.io.git",
-    "files": [],
-    "postprocessors": ["CodeHighlighter", "SitemapGenerator"]
+    "files": [{
+      "path": "./files/CNAME",
+      "name": "CNAME"
+    }],
+    "postprocessors": ["CodeHighlighter", "SitemapGenerator", "Doctyper"]
   }
 }
