@@ -114,7 +114,7 @@ export default class Commands {
       // default: 'http://hf-productions-design.webflow.io/',
       // default: 'http://ngtalks.io/',
       // default: 'https://valor.webflow.io',
-      default: 'https://table-p.webflow.io',
+      default: 'https://valor-test.webflow.io',
       validate: function (url) {
         if (!url || url === '') {
           // || !url.match(new RegExp(/[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi))) {

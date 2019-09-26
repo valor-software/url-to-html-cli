@@ -9,6 +9,6 @@
       "path": "./files/CNAME",
       "name": "CNAME"
     }],
-    "postprocessors": ["CodeHighlighter", "SitemapGenerator", "Doctyper"]
+    "postprocessors": ["CodeHighlighter", "SitemapGenerator", "Doctyper", "Markdowner"]
   }
 }
